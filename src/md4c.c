@@ -1634,9 +1634,18 @@ md_label_hash(const CHAR* label, SZ size)
         is_whitespace = ISUNICODEWHITESPACE_(codepoint) || ISNEWLINE_(label[off]);
 
         if(is_whitespace) {
+            off = md_skip_unicode_whitespace(label, off, size);
+
+            /* A TRAILING run of whitespace is not hashed, because
+             * md_label_cmp() does not compare one: it treats the end of a
+             * label as whitespace, so "[foo ]" and "[foo]" are equal to it.
+             * Hashing the trailing run put them in different buckets and the
+             * comparison that would have matched them was never reached. */
+            if(off >= size)
+                break;
+
             codepoint = ' ';
             hash = md_fnv1a(hash, &codepoint, sizeof(unsigned));
-            off = md_skip_unicode_whitespace(label, off, size);
         } else {
             MD_UNICODE_FOLD_INFO fold_info;
 
