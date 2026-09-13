@@ -3876,12 +3876,11 @@ md_resolve_bracket_footnote(MD_CTX* ctx, MD_MARK* opener, MD_MARK* closer,
     if(opener->ch != _T('[')  ||  opener->end >= ctx->size  ||  CH(opener->end) != _T('^'))
         return false;
 
-    /* Expand the opener to eat the '^' */
-    opener->end++;
     closer = &ctx->marks[opener->next];
 
-    /* Verify the label satisfies the label rules. */
-    label_beg = opener->end;
+    /* Verify the label satisfies the label rules. The label begins one past
+     * the opener's end, which is the '^'. */
+    label_beg = opener->end + 1;
     if(!md_is_footnote_label(ctx, label_beg, &label_end)  ||  label_end != closer->beg)
         return false;
 
@@ -3891,6 +3890,14 @@ md_resolve_bracket_footnote(MD_CTX* ctx, MD_MARK* opener, MD_MARK* closer,
     def = md_lookup_footnote_def(ctx, STR(label_beg), label_end - label_beg);
     if(def == NULL)
         return false;
+
+    /* Expand the opener to eat the '^'.
+     *
+     * Deliberately not before the three checks above: each of them can fail,
+     * and the bracket pair then goes on to be resolved as an ordinary link by
+     * md_resolve_bracket_link(), which takes the link's text from opener->end.
+     * An opener already moved past the '^' loses it from that text. */
+    opener->end++;
 
     /* Assign index on first reference. */
     if(def->index == 0)
