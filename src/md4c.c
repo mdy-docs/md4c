@@ -3510,10 +3510,13 @@ md_collect_marks(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines, int table_m
                     const CHAR* suffix;
                     SZ suffix_size;
                 } scheme_map[] = {
-                    /* In the order from the most frequently used, arguably. */
+                    /* GFM's extended autolink covers http and https, and
+                     * nothing else with a scheme; see the "Autolinks
+                     * (extension)" section of the GFM spec. `ftp` was here as
+                     * well and made MD_DIALECT_GITHUB link something GitHub
+                     * does not. */
                     { _T("http"), 4,    _T("//"), 2 },
-                    { _T("https"), 5,   _T("//"), 2 },
-                    { _T("ftp"), 3,     _T("//"), 2 }
+                    { _T("https"), 5,   _T("//"), 2 }
                 };
                 int scheme_index;
 
